@@ -1,6 +1,6 @@
 {
   "name": "quill-to-word",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Transforms quill delta into a word document.",
   "main": "dist/main.js",
   "scripts": {
@@ -8,6 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack"
   },
+  "types" : "./types/src/index.d.ts",
   "keywords": [
     "quill"
   ],
