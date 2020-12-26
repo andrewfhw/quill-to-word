@@ -1,2 +1,2 @@
-declare function quillToWord(): string;
+export declare function quillToWord(): string;
 //# sourceMappingURL=index.d.ts.map

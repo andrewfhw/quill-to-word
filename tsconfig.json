@@ -8,5 +8,7 @@
         "allowJs": true,
         "declaration": true,
         "declarationMap": true,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true
     }
 }
