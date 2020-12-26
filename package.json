@@ -1,0 +1,14 @@
+{
+  "name": "quill-to-word",
+  "version": "0.0.0",
+  "description": "Transforms quill delta into a word document.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "quill"
+  ],
+  "author": "Andrew Gilbert",
+  "license": "MIT"
+}
