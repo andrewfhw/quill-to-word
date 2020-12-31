@@ -1,5 +1,6 @@
 import * as path from 'path';
 import { Configuration } from 'webpack';
+import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 
 const config: Configuration = {
     entry: './src/index.ts',
@@ -23,6 +24,9 @@ const config: Configuration = {
         library: 'QuillToWord',
         libraryTarget: 'umd'
     },
+    plugins: [
+        new CleanWebpackPlugin()
+    ],
     externals: {}
 };
 
