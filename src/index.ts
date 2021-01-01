@@ -1,4 +1,4 @@
-import { ParsedQuillDelta, Paragraph as QParagraph, TextRun as QTextRun } from 'quilljs-parser';
+import { ParsedQuillDelta, Paragraph as QParagraph, TextRun as QTextRun, parseQuillDelta, RawQuillDelta } from 'quilljs-parser';
 import * as docx from 'docx';
 import { AlignmentType, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
 import { saveAs } from 'file-saver'
@@ -77,21 +77,24 @@ const defaultStyles = [{
   }
 
 // main function to generate Word document
-export async function generateWord(delta: ParsedQuillDelta): Promise<Blob> {
+export async function generateWord(delta: RawQuillDelta): Promise<Blob> {
+
+  const parsed = parseQuillDelta(delta);
+
     const doc = new docx.Document({
         numbering: defaultNumbering
     });
     const sections: Paragraph[][] = [];
     // if array of deltas, iterate over each delta
-    if (Array.isArray(delta)) {
-        for (const section of delta) {
+    if (Array.isArray(parsed)) {
+        for (const section of parsed) {
             // build sections
             sections.push(buildSection(section.paragraphs));
         };
     // only a single delta
     } else {
         // build single section
-        sections.push(buildSection(delta.paragraphs));
+        sections.push(buildSection(parsed.paragraphs));
     }
 
     for (const section of sections) {
