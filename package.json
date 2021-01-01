@@ -1,6 +1,6 @@
 {
   "name": "quill-to-word",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Transforms a QuillJS delta into a Word Document",
   "main": "./dist/main.js",
   "types": "./dist/src/index.d.ts",
