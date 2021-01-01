@@ -4,7 +4,54 @@ import { AlignmentType, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
 import { saveAs } from 'file-saver'
 
 const defaultStyles = [{
-
+  id: 'normal',
+  name: 'Normal',
+  next: 'normal',
+  basedOn: 'normal',
+  quickFormat: true,
+  run: {
+    size: 24
+  },
+  paragraph: {
+    spacing: {
+      line: 480,
+      before: 0,
+      after: 0
+    }
+  }
+},{
+  id: 'header_1',
+  name: 'Heading 1',
+  next: 'normal',
+  quickFormat: true,
+  run: {
+    font: 'Calibri',
+    size: 30,
+    bold: true
+  },
+  paragraph: {
+    spacing: {
+      before: 300,
+      after: 200
+    }
+  }
+},{
+  id: 'header_2',
+  name: 'Heading 2',
+  basedOn: 'normal',
+  next: 'normal',
+  quickFormat: true,
+  run: {
+    font: 'Calibri',
+    size: 26,
+    bold: true
+  },
+  paragraph: {
+    spacing: {
+      before: 200,
+      after: 100
+    }
+  }
 }];
 
  const customLevels = [{
@@ -82,7 +129,10 @@ export async function generateWord(delta: RawQuillDelta): Promise<Blob> {
   const parsed = parseQuillDelta(delta);
 
     const doc = new docx.Document({
-        numbering: defaultNumbering
+      styles: {
+        paragraphStyles: defaultStyles
+      },
+      numbering: defaultNumbering
     });
     const sections: Paragraph[][] = [];
     // if array of deltas, iterate over each delta
