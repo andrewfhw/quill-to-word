@@ -1,6 +1,6 @@
 {
   "name": "quill-to-word",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "Transforms a QuillJS delta into a Word Document",
   "main": "./dist/main.js",
   "types": "./dist/src/index.d.ts",
@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/andrewraygilbert/quill-to-word#readme",
   "devDependencies": {
+    "@types/file-saver": "^2.0.1",
     "@types/jest": "^26.0.19",
     "@types/node": "^14.14.16",
     "@types/webpack": "^4.41.25",
@@ -40,6 +41,7 @@
   },
   "dependencies": {
     "docx": "^5.4.1",
+    "file-saver": "^2.0.5",
     "quilljs-parser": "^1.0.1"
   }
 }
