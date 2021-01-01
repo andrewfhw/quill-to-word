@@ -15,8 +15,8 @@
     "quilljs"
   ],
   "repository": {
-    "type" : "git",
-    "url" : "git+https://github.com/andrewraygilbert/quill-to-word.git"
+    "type": "git",
+    "url": "git+https://github.com/andrewraygilbert/quill-to-word.git"
   },
   "author": "Andrew Gilbert",
   "license": "MIT",
@@ -39,6 +39,7 @@
     "webpack-cli": "^4.3.0"
   },
   "dependencies": {
-    "quilljs-parser": "^1.0.0"
+    "docx": "^5.4.1",
+    "quilljs-parser": "^1.0.1"
   }
 }
