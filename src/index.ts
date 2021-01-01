@@ -52,6 +52,14 @@ const defaultStyles = [{
       after: 100
     }
   }
+},{
+  id: 'list_paragraph',
+  name: 'List Paragraph',
+  basedOn: 'normal',
+  quickFormat: true,
+  run: {
+    size: 26
+  }
 }];
 
  const customLevels = [{
