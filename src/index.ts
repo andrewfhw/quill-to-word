@@ -1,11 +1,34 @@
 import { ParsedQuillDelta, Paragraph as QParagraph, TextRun as QTextRun, parseQuillDelta, RawQuillDelta } from 'quilljs-parser';
 import * as docx from 'docx';
-import { AlignmentType, Hyperlink, HyperlinkRef, Media, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
+import { AlignmentType, Hyperlink, HyperlinkRef, HyperlinkType, Media, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
 import { saveAs } from 'file-saver'
 import { defaultNumbering, defaultStyles } from './default-styles';
 
+let linkTracker = 0;
+
+function setupDoc(parsedDelta: ParsedQuillDelta) {
+  let hyperlinks: any = {};
+  let numbering: any = {};
+  if (parsedDelta.setup.hyperlinks.length > 0) {
+    let linkTracker = 0;
+    for (const link of parsedDelta.setup.hyperlinks) {
+      const newLink = {
+        link: link.link,
+        text: link.text,
+        type: HyperlinkType.EXTERNAL
+      };
+      hyperlinks = {
+        ...hyperlinks,
+        [`link${linkTracker}`]: newLink
+      }
+      linkTracker++;
+    };
+  }
+}
+
 // main function to generate docx document
 export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[]): Promise<Blob> {
+  linkTracker = 0;
   // create a container for the docx doc sections
   const sections: Paragraph[][] = [];
   // create a container for the parsed Quill deltas
@@ -80,9 +103,9 @@ function buildSection(quillParagraphs: QParagraph[], doc: docx.Document): Paragr
 }
 
 // generate a paragraph as an array of text runs
-function buildParagraph(paragraph: QParagraph): (TextRun | Hyperlink)[] {
+function buildParagraph(paragraph: QParagraph): (TextRun | HyperlinkRef)[] {
   // container to hold docx text runs
-  const textRuns: (TextRun | Hyperlink)[] = [];
+  const textRuns: (TextRun | HyperlinkRef)[] = [];
   // build a docx run from each delta run
   for (const run of paragraph.textRuns!) {
       // if formula
@@ -97,10 +120,11 @@ function buildParagraph(paragraph: QParagraph): (TextRun | Hyperlink)[] {
 }
 
 // generate a docx text run from quill text run
-function buildTextRun(run: QTextRun): TextRun | Hyperlink {
-  let textRun: TextRun | Hyperlink;
+function buildTextRun(run: QTextRun): TextRun | HyperlinkRef {
+  let textRun: TextRun | HyperlinkRef;
   if (run.attributes?.link) {
-    textRun = new Hyperlink(run.text, 'external', run.attributes.link);
+    // handle link **
+    textRun = new HyperlinkRef(`link${linkTracker}`);
   } else {
     textRun = new TextRun({
       text: run.text,
