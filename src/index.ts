@@ -6,7 +6,7 @@ import { defaultNumbering, defaultStyles } from './default-styles';
 
 let linkTracker = 0;
 
-function setupDoc(parsedDelta: ParsedQuillDelta) {
+function setupDoc(parsedDelta: ParsedQuillDelta): docx.Document {
   let hyperlinks: any = {};
   let numbering: any = {};
   if (parsedDelta.setup.hyperlinks.length > 0) {
@@ -24,11 +24,21 @@ function setupDoc(parsedDelta: ParsedQuillDelta) {
       linkTracker++;
     };
   }
+  console.log('hyperlinks', hyperlinks);
+  const doc = new docx.Document({
+    styles: {
+      paragraphStyles: defaultStyles
+    },
+    numbering: defaultNumbering,
+    hyperlinks: hyperlinks
+  });
+  return doc;
 }
 
 // main function to generate docx document
 export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[]): Promise<Blob> {
   linkTracker = 0;
+  let doc: docx.Document;
   // create a container for the docx doc sections
   const sections: Paragraph[][] = [];
   // create a container for the parsed Quill deltas
@@ -49,23 +59,17 @@ export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | Par
   } else {
     throw new Error('Please provide a raw Quill Delta, a parsed Quill delta, or an Array of parsed Quill deltas. See QuillTodocx readme.');
   }
-  // create the new docx doc object
-  const doc = new docx.Document({
-    styles: {
-      paragraphStyles: defaultStyles
-    },
-    numbering: defaultNumbering
-  });
+  doc = setupDoc(parsedDeltas[0]);
   // build docx sections
   for (const delta of parsedDeltas) {
-      // build sections
-      sections.push(buildSection(delta.paragraphs, doc));
+    // build sections
+    sections.push(buildSection(delta.paragraphs, doc));
   };
   // add docx sections to doc
   for (const section of sections) {
-      doc.addSection({
-          children: section
-      });
+    doc.addSection({
+        children: section
+    });
   };
   // create the blob
   const blob = await Packer.toBlob(doc);
