@@ -129,6 +129,7 @@ function buildTextRun(run: QTextRun): TextRun | HyperlinkRef {
   if (run.attributes?.link) {
     // handle link **
     textRun = new HyperlinkRef(`link${linkTracker}`);
+    linkTracker++;
   } else {
     textRun = new TextRun({
       text: run.text,
