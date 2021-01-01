@@ -1,219 +1,102 @@
 import { ParsedQuillDelta, Paragraph as QParagraph, TextRun as QTextRun, parseQuillDelta, RawQuillDelta } from 'quilljs-parser';
 import * as docx from 'docx';
-import { AlignmentType, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
+import { AlignmentType, Media, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
 import { saveAs } from 'file-saver'
+import { defaultNumbering, defaultStyles } from './default-styles';
 
-const defaultStyles = [{
-  id: 'normal',
-  name: 'Normal',
-  next: 'normal',
-  basedOn: 'normal',
-  quickFormat: true,
-  run: {
-    size: 24
-  },
-  paragraph: {
-    spacing: {
-      line: 480,
-      before: 0,
-      after: 0
-    }
-  }
-},{
-  id: 'header_1',
-  name: 'Heading 1',
-  next: 'normal',
-  quickFormat: true,
-  run: {
-    font: 'Calibri',
-    size: 30,
-    bold: true
-  },
-  paragraph: {
-    spacing: {
-      before: 300,
-      after: 200
-    }
-  }
-},{
-  id: 'header_2',
-  name: 'Heading 2',
-  basedOn: 'normal',
-  next: 'normal',
-  quickFormat: true,
-  run: {
-    font: 'Calibri',
-    size: 26,
-    bold: true
-  },
-  paragraph: {
-    spacing: {
-      before: 200,
-      after: 100
-    }
-  }
-},{
-  id: 'list_paragraph',
-  name: 'List Paragraph',
-  basedOn: 'normal',
-  quickFormat: true,
-  run: {
-    size: 26
-  }
-}];
-
- const customLevels = [{
-    level: 0,
-    format: 'decimal',
-    text: '%1.',
-    alignment: AlignmentType.LEFT,
-    style: {
-      paragraph: {
-        indent: { left: 720, hanging: 360 }
-      }
-    }
-  },{
-    level: 1,
-    format: 'lowerLetter',
-    text: '%2.',
-    alignment: AlignmentType.LEFT,
-    style: {
-      paragraph: {
-        indent: { left: 1440, hanging: 360 }
-      }
-    }
-  },{
-    level: 2,
-    format: 'lowerRoman',
-    text: '%3.',
-    alignment: AlignmentType.LEFT,
-    style: {
-      paragraph: {
-        indent: { left: 2160, hanging: 360 }
-      }
-    }
-  },{
-    level: 3,
-    format: 'decimal',
-    text: '%4.',
-    alignment: AlignmentType.LEFT,
-    style: {
-      paragraph: {
-        indent: { left: 2880, hanging: 360 }
-      }
-    }
-  },{
-    level: 4,
-    format: 'lowerLetter',
-    text: '%5.',
-    alignment: AlignmentType.LEFT,
-    style: {
-      paragraph: {
-        indent: { left: 3600, hanging: 360 }
-      }
-    }
-  },{
-    level: 3,
-    format: 'lowerRoman',
-    text: '%5.',
-    alignment: AlignmentType.LEFT,
-    style: {
-      paragraph: {
-        indent: { left: 4320, hanging: 360 }
-      }
-    }
-  }]
-
-  const defaultNumbering = {
-    config: [{
-      reference: 'default-numbering',
-      levels: customLevels
-    }]
-  }
-
-// main function to generate Word document
-export async function generateWord(delta: RawQuillDelta): Promise<Blob> {
-
-  const parsed = parseQuillDelta(delta);
-
-    const doc = new docx.Document({
-      styles: {
-        paragraphStyles: defaultStyles
-      },
-      numbering: defaultNumbering
-    });
-    const sections: Paragraph[][] = [];
-    // if array of deltas, iterate over each delta
-    if (Array.isArray(parsed)) {
-        for (const section of parsed) {
-            // build sections
-            sections.push(buildSection(section.paragraphs));
-        };
-    // only a single delta
-    } else {
-        // build single section
-        sections.push(buildSection(parsed.paragraphs));
-    }
-
-    for (const section of sections) {
-        doc.addSection({
-            children: section
-        });
+// main function to generate docx document
+export async function generatedocx(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[]): Promise<Blob> {
+  // create a container for the docx doc sections
+  const sections: Paragraph[][] = [];
+  // create a container for the parsed Quill deltas
+  const parsedDeltas: ParsedQuillDelta[] = [];
+  // if input is a raw quill delta
+  if ((delta as RawQuillDelta).ops) {
+    const parsedDelta = parseQuillDelta(delta as RawQuillDelta);
+    parsedDeltas.push(parsedDelta);
+  // if input is an array of parsed quill deltas
+  } else if (Array.isArray(delta)) {
+    for (const eachDelta of delta) {
+      parsedDeltas.push(eachDelta);
     };
-
-    
-
-    // download
-    const blob = await Packer.toBlob(doc);
-
-    return blob;
+  // if input is a single parsed quill delta
+  } else if ((delta as ParsedQuillDelta).paragraphs) {
+    parsedDeltas.push(delta as ParsedQuillDelta);
+  // if input is not recognized
+  } else {
+    throw new Error('Please provide a raw Quill Delta, a parsed Quill delta, or an Array of parsed Quill deltas. See QuillTodocx readme.');
+  }
+  // create the new docx doc object
+  const doc = new docx.Document({
+    styles: {
+      paragraphStyles: defaultStyles
+    },
+    numbering: defaultNumbering
+  });
+  // build docx sections
+  for (const delta of parsedDeltas) {
+      // build sections
+      sections.push(buildSection(delta.paragraphs, doc));
+  };
+  // add docx sections to doc
+  for (const section of sections) {
+      doc.addSection({
+          children: section
+      });
+  };
+  // create the blob
+  const blob = await Packer.toBlob(doc);
+  return blob;
 }
 
 // generate a section as an array of paragraphs
-function buildSection(quillParagraphs: QParagraph[]): Paragraph[] {
-    const paragraphs: Paragraph[] = [];
-
-    for (const paragraph of quillParagraphs) {
-        // if embed video or image
-        if (paragraph.embed) {
-
-        // if text runs
-        } else if (paragraph.textRuns) {
-            paragraphs.push(new Paragraph({
-                children: buildParagraph(paragraph),
-                heading: paragraph.attributes?.header === 1 ? docx.HeadingLevel.HEADING_1 : paragraph.attributes?.header === 2 ? docx.HeadingLevel.HEADING_2 : undefined,
-                bullet: paragraph.attributes?.list === 'bullet' ? { level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
-                numbering: paragraph.attributes?.list === 'ordered' ? { reference: 'default-numbering', level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
-                alignment: paragraph.attributes?.align === 'left' ? AlignmentType.LEFT : paragraph.attributes?.align === 'center' ? AlignmentType.CENTER : paragraph.attributes?.align === 'right' ? AlignmentType.RIGHT : paragraph.attributes?.align === 'justify' ? AlignmentType.JUSTIFIED : undefined,
-                // direction
-                // indent
-                // blockquote
-                // code block
-            }));
-        }
-    };
-
-    // build 
-
-    return paragraphs;
+function buildSection(quillParagraphs: QParagraph[], doc: docx.Document): Paragraph[] {
+  // create a container to hold the docx paragraphs
+  const paragraphs: Paragraph[] = [];
+  // build a docx paragraph from each delta paragraph
+  for (const paragraph of quillParagraphs) {
+      // if embed video or image
+      if (paragraph.embed?.image) {
+        const image = Media.addImage(doc, paragraph.embed.image);
+        paragraphs.push(new Paragraph(image));
+      } else if (paragraph.embed?.video) {
+        // handle video embed **
+      // if text runs
+      } else if (paragraph.textRuns) {
+          paragraphs.push(new Paragraph({
+              children: buildParagraph(paragraph),
+              heading: paragraph.attributes?.header === 1 ? docx.HeadingLevel.HEADING_1 : paragraph.attributes?.header === 2 ? docx.HeadingLevel.HEADING_2 : undefined,
+              bullet: paragraph.attributes?.list === 'bullet' ? { level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
+              numbering: paragraph.attributes?.list === 'ordered' ? { reference: 'default-numbering', level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
+              alignment: paragraph.attributes?.align === 'left' ? AlignmentType.LEFT : paragraph.attributes?.align === 'center' ? AlignmentType.CENTER : paragraph.attributes?.align === 'right' ? AlignmentType.RIGHT : paragraph.attributes?.align === 'justify' ? AlignmentType.JUSTIFIED : undefined,
+              // direction
+              // indent
+              // blockquote
+              // code block
+          }));
+      }
+  };
+  return paragraphs;
 }
 
 // generate a paragraph as an array of text runs
 function buildParagraph(paragraph: QParagraph): TextRun[] {
-    const textRuns: TextRun[] = [];
-    for (const run of paragraph.textRuns!) {
-        // if formula
-        if ((run as {formula: string}).formula) {
-
-        // if text
-        } else if ((run as QTextRun).text) {
-            textRuns.push(buildTextRun(run as QTextRun));
-        }
-    };
-    return textRuns;
+  // container to hold docx text runs
+  const textRuns: TextRun[] = [];
+  // build a docx run from each delta run
+  for (const run of paragraph.textRuns!) {
+      // if formula
+      if ((run as {formula: string}).formula) {
+        // handle formulas **
+      // if text
+      } else if ((run as QTextRun).text) {
+          textRuns.push(buildTextRun(run as QTextRun));
+      }
+  };
+  return textRuns;
 }
 
-// generate a text run
+// generate a docx text run from quill text run
 function buildTextRun(run: QTextRun): TextRun {
     const textRun = new TextRun({
         text: run.text,
@@ -246,10 +129,3 @@ function buildImage(image: string) {
 function buildVideo(video: string) {
 
 }
-
-
-
-
-
-
-// allow user to set the 
