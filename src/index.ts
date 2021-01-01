@@ -77,7 +77,7 @@ const defaultStyles = [{
   }
 
 // main function to generate Word document
-export async function generateWord(delta: ParsedQuillDelta | ParsedQuillDelta[]): Promise<Blob> {
+export async function generateWord(delta: ParsedQuillDelta): Promise<Blob> {
     const doc = new docx.Document({
         numbering: defaultNumbering
     });
