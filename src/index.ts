@@ -5,7 +5,7 @@ import { saveAs } from 'file-saver'
 import { defaultNumbering, defaultStyles } from './default-styles';
 
 // main function to generate docx document
-export async function generatedocx(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[]): Promise<Blob> {
+export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[]): Promise<Blob> {
   // create a container for the docx doc sections
   const sections: Paragraph[][] = [];
   // create a container for the parsed Quill deltas
