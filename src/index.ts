@@ -1,6 +1,6 @@
 import { ParsedQuillDelta, Paragraph as QParagraph, TextRun as QTextRun, parseQuillDelta, RawQuillDelta } from 'quilljs-parser';
 import * as docx from 'docx';
-import { AlignmentType, Media, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
+import { AlignmentType, Hyperlink, HyperlinkRef, Media, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
 import { saveAs } from 'file-saver'
 import { defaultNumbering, defaultStyles } from './default-styles';
 
@@ -80,9 +80,9 @@ function buildSection(quillParagraphs: QParagraph[], doc: docx.Document): Paragr
 }
 
 // generate a paragraph as an array of text runs
-function buildParagraph(paragraph: QParagraph): TextRun[] {
+function buildParagraph(paragraph: QParagraph): (TextRun | Hyperlink)[] {
   // container to hold docx text runs
-  const textRuns: TextRun[] = [];
+  const textRuns: (TextRun | Hyperlink)[] = [];
   // build a docx run from each delta run
   for (const run of paragraph.textRuns!) {
       // if formula
@@ -97,22 +97,28 @@ function buildParagraph(paragraph: QParagraph): TextRun[] {
 }
 
 // generate a docx text run from quill text run
-function buildTextRun(run: QTextRun): TextRun {
-    const textRun = new TextRun({
-        text: run.text,
-        bold: run.attributes?.bold ? true : false,
-        italics: run.attributes?.italic ? true : false,
-        subScript: run.attributes?.script === 'sub' ? true : false,
-        superScript: run.attributes?.script === 'super' ? true : false,
-        strike: run.attributes?.strike ? true : false,
-        underline: run.attributes?.underline ? { type: UnderlineType.SINGLE, color: undefined } : undefined,
-        color: run.attributes?.color ? run.attributes?.color.slice(1) : undefined,
-        // size
-        // font
-        // background color
-        // link
-    });
-    return textRun;
+function buildTextRun(run: QTextRun): TextRun | Hyperlink {
+  let textRun: TextRun | Hyperlink;
+  if (run.attributes?.link) {
+    textRun = new Hyperlink(run.text, 'external', run.attributes.link);
+  } else {
+    textRun = new TextRun({
+      text: run.text,
+      bold: run.attributes?.bold ? true : false,
+      italics: run.attributes?.italic ? true : false,
+      subScript: run.attributes?.script === 'sub' ? true : false,
+      superScript: run.attributes?.script === 'super' ? true : false,
+      strike: run.attributes?.strike ? true : false,
+      underline: run.attributes?.underline ? { type: UnderlineType.SINGLE, color: undefined } : undefined,
+      color: run.attributes?.color ? run.attributes?.color.slice(1) : undefined,
+      
+      // size
+      // font
+      // background color
+      // link
+  });
+  }
+  return textRun;
 }
 
 // build a formula
