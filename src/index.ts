@@ -1,38 +1,71 @@
-import { ParsedQuillDelta, Paragraph as QParagraph, TextRun as QTextRun, parseQuillDelta, RawQuillDelta } from 'quilljs-parser';
+import { ParsedQuillDelta, Paragraph as QParagraph, TextRun as QTextRun, parseQuillDelta, RawQuillDelta, QHyperLink } from 'quilljs-parser';
 import * as docx from 'docx';
-import { AlignmentType, Hyperlink, HyperlinkRef, HyperlinkType, Media, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
-import { saveAs } from 'file-saver'
-import { defaultNumbering, defaultStyles } from './default-styles';
+import { AlignmentType, HyperlinkRef, HyperlinkType, Media, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
+import { customLevels, defaultStyles } from './default-styles';
 
 let linkTracker = 0;
 
+// sets up the docx document
 function setupDoc(parsedDelta: ParsedQuillDelta): docx.Document {
   let hyperlinks: any = {};
   let numbering: any = {};
+  // build the hyperlinks property
   if (parsedDelta.setup.hyperlinks.length > 0) {
-    let linkTracker = 0;
-    for (const link of parsedDelta.setup.hyperlinks) {
-      const newLink = {
-        link: link.link,
-        text: link.text,
-        type: HyperlinkType.EXTERNAL
-      };
-      hyperlinks = {
-        ...hyperlinks,
-        [`link${linkTracker}`]: newLink
-      }
-      linkTracker++;
-    };
+    hyperlinks = buildHyperlinks(parsedDelta.setup.hyperlinks);
+  };
+  // build the numbering property
+  if (parsedDelta.setup.numberedLists > 0) {
+    numbering = buildNumbering(parsedDelta.setup.numberedLists);
   }
-  console.log('hyperlinks', hyperlinks);
   const doc = new docx.Document({
     styles: {
       paragraphStyles: defaultStyles
     },
-    numbering: defaultNumbering,
+    numbering: numbering,
     hyperlinks: hyperlinks
   });
   return doc;
+}
+
+// build docx numbering object from quill numbered lists
+function buildNumbering(numberOfLists: number): object {
+  let numbering: object = {};
+  let numberTracker = 0;
+  // create a new docx numbering object for each quill numbered list
+  while (numberTracker < numberOfLists) {
+    const newList = {
+      config: {
+        reference: `numbered_${numberTracker}`,
+        levels: customLevels
+      }
+    };
+    numbering = {
+      ...numbering,
+      [`numbered_${numberTracker}`]: newList
+    };
+    numberTracker++;
+  };
+  return numbering;
+}
+
+// build a docx hyperlinks object from the quill hyperlinks
+function buildHyperlinks(quillLinks: QHyperLink[]): object {
+  let hyperlinks: object = {};
+  let linkTracker = 0;
+  // generate a new docx link object from each quill link; merge into hyperlinks object
+  for (const link of quillLinks) {
+    const docLink = {
+      link: link.link,
+      text: link.text,
+      type: HyperlinkType.EXTERNAL
+    };
+    hyperlinks = {
+      ...hyperlinks,
+      [`link${linkTracker}`]: docLink
+    }
+    linkTracker++;
+  };
+  return hyperlinks;
 }
 
 // main function to generate docx document
@@ -140,7 +173,6 @@ function buildTextRun(run: QTextRun): TextRun | HyperlinkRef {
       strike: run.attributes?.strike ? true : false,
       underline: run.attributes?.underline ? { type: UnderlineType.SINGLE, color: undefined } : undefined,
       color: run.attributes?.color ? run.attributes?.color.slice(1) : undefined,
-      
       // size
       // font
       // background color
@@ -152,11 +184,6 @@ function buildTextRun(run: QTextRun): TextRun | HyperlinkRef {
 
 // build a formula
 function buildFormula(formula: string) {
-
-}
-
-// build an image
-function buildImage(image: string) {
 
 }
 
