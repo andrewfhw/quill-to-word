@@ -3,36 +3,43 @@ import * as docx from 'docx';
 import { AlignmentType, HyperlinkRef, HyperlinkType, Media, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
 import { customLevels, defaultStyles } from './default-styles';
 
+interface DocxConfig {
+  styles: {
+    paragraphStyles: any
+  };
+  numbering: { config: object[] } | undefined;
+  hyperlinks: object | undefined;
+}
+
 let linkTracker = 0;
 let numberedTracker = 0;
 
 // sets up the docx document
-function setupDoc(parsedDelta: ParsedQuillDelta): docx.Document {
-  let hyperlinks: any = {};
-  let numberingConfig: any[] = [];
+function setupDoc(parsedDelta: ParsedQuillDelta): DocxConfig  {
+  let hyperlinks;
+  let numbering;
   // build the hyperlinks property
   if (parsedDelta.setup.hyperlinks.length > 0) {
     hyperlinks = buildHyperlinks(parsedDelta.setup.hyperlinks);
   };
   // build the numbering property
   if (parsedDelta.setup.numberedLists > 0) {
-    numberingConfig = buildNumbering(parsedDelta.setup.numberedLists);
+    numbering = buildNumbering(parsedDelta.setup.numberedLists);
   }
-  const doc = new docx.Document({
+  const config: DocxConfig = {
     styles: {
       paragraphStyles: defaultStyles
     },
-    numbering: {
-      config: numberingConfig
-    },
-    hyperlinks: hyperlinks
-  });
-  return doc;
+    numbering: numbering ? numbering : undefined,
+    hyperlinks: hyperlinks ? hyperlinks : undefined
+  };
+  console.log('docConfig', config);
+  return config;
 }
 
 // build docx numbering object from quill numbered lists
-function buildNumbering(numberOfLists: number): any[] {
-  let numberingConfig: any[] = [];
+function buildNumbering(numberOfLists: number): { config: object[] } {
+  let config: any[] = [];
   let numberTracker = 0;
   // create a new docx numbering object for each quill numbered list
   while (numberTracker < numberOfLists) {
@@ -40,10 +47,13 @@ function buildNumbering(numberOfLists: number): any[] {
       reference: `numbered_${numberTracker}`,
       levels: customLevels
     };
-    numberingConfig.push(newList);
+    config.push(newList);
     numberTracker++;
   };
-  return numberingConfig;
+  const numberConfig = {
+    config: config
+  };
+  return numberConfig;
 }
 
 // build a docx hyperlinks object from the quill hyperlinks
@@ -91,7 +101,8 @@ export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | Par
   } else {
     throw new Error('Please provide a raw Quill Delta, a parsed Quill delta, or an Array of parsed Quill deltas. See QuillTodocx readme.');
   }
-  doc = setupDoc(parsedDeltas[0]);
+  let docConfig = setupDoc(parsedDeltas[0]);
+  doc = new docx.Document(docConfig as any);
   // build docx sections
   for (const delta of parsedDeltas) {
     // build sections
