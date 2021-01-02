@@ -37,10 +37,8 @@ function buildNumbering(numberOfLists: number): any[] {
   // create a new docx numbering object for each quill numbered list
   while (numberTracker < numberOfLists) {
     const newList = {
-      config: [{
-        reference: `numbered_${numberTracker}`,
-        levels: customLevels
-      }]
+      reference: `numbered_${numberTracker}`,
+      levels: customLevels
     };
     numberingConfig.push(newList);
     numberTracker++;
