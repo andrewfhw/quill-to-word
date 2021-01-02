@@ -4,6 +4,7 @@ import { AlignmentType, HyperlinkRef, HyperlinkType, Media, Packer, Paragraph, T
 import { customLevels, defaultStyles } from './default-styles';
 
 let linkTracker = 0;
+let numberedTracker = 0;
 
 // sets up the docx document
 function setupDoc(parsedDelta: ParsedQuillDelta): docx.Document {
@@ -71,6 +72,7 @@ function buildHyperlinks(quillLinks: QHyperLink[]): object {
 // main function to generate docx document
 export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[]): Promise<Blob> {
   linkTracker = 0;
+  numberedTracker = 0;
   let doc: docx.Document;
   // create a container for the docx doc sections
   const sections: Paragraph[][] = [];
@@ -127,13 +129,16 @@ function buildSection(quillParagraphs: QParagraph[], doc: docx.Document): Paragr
               children: buildParagraph(paragraph),
               heading: paragraph.attributes?.header === 1 ? docx.HeadingLevel.HEADING_1 : paragraph.attributes?.header === 2 ? docx.HeadingLevel.HEADING_2 : undefined,
               bullet: paragraph.attributes?.list === 'bullet' ? { level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
-              numbering: paragraph.attributes?.list === 'ordered' ? { reference: 'default-numbering', level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
+              numbering: paragraph.attributes?.list === 'ordered' ? { reference: `numbered_${numberedTracker}`, level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
               alignment: paragraph.attributes?.align === 'left' ? AlignmentType.LEFT : paragraph.attributes?.align === 'center' ? AlignmentType.CENTER : paragraph.attributes?.align === 'right' ? AlignmentType.RIGHT : paragraph.attributes?.align === 'justify' ? AlignmentType.JUSTIFIED : undefined,
               // direction
               // indent
               // blockquote
               // code block
           }));
+          if (paragraph.attributes?.list === 'ordered') {
+            numberedTracker++;
+          }
       }
   };
   return paragraphs;
