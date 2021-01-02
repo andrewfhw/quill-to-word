@@ -9,44 +9,43 @@ let numberedTracker = 0;
 // sets up the docx document
 function setupDoc(parsedDelta: ParsedQuillDelta): docx.Document {
   let hyperlinks: any = {};
-  let numbering: any = {};
+  let numberingConfig: any[] = [];
   // build the hyperlinks property
   if (parsedDelta.setup.hyperlinks.length > 0) {
     hyperlinks = buildHyperlinks(parsedDelta.setup.hyperlinks);
   };
   // build the numbering property
   if (parsedDelta.setup.numberedLists > 0) {
-    numbering = buildNumbering(parsedDelta.setup.numberedLists);
+    numberingConfig = buildNumbering(parsedDelta.setup.numberedLists);
   }
   const doc = new docx.Document({
     styles: {
       paragraphStyles: defaultStyles
     },
-    numbering: numbering,
+    numbering: {
+      config: numberingConfig
+    },
     hyperlinks: hyperlinks
   });
   return doc;
 }
 
 // build docx numbering object from quill numbered lists
-function buildNumbering(numberOfLists: number): object {
-  let numbering: object = {};
+function buildNumbering(numberOfLists: number): any[] {
+  let numberingConfig: any[] = [];
   let numberTracker = 0;
   // create a new docx numbering object for each quill numbered list
   while (numberTracker < numberOfLists) {
     const newList = {
-      config: {
+      config: [{
         reference: `numbered_${numberTracker}`,
         levels: customLevels
-      }
+      }]
     };
-    numbering = {
-      ...numbering,
-      [`numbered_${numberTracker}`]: newList
-    };
+    numberingConfig.push(newList);
     numberTracker++;
   };
-  return numbering;
+  return numberingConfig;
 }
 
 // build a docx hyperlinks object from the quill hyperlinks
