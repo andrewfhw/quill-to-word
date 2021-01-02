@@ -42,6 +42,6 @@
   "dependencies": {
     "docx": "^5.4.1",
     "file-saver": "^2.0.5",
-    "quilljs-parser": "^1.0.8"
+    "quilljs-parser": "^1.0.9"
   }
 }

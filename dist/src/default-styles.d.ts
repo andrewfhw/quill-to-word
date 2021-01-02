@@ -9,6 +9,7 @@ export declare const defaultStyles: ({
         size: number;
         font?: undefined;
         bold?: undefined;
+        italics?: undefined;
     };
     paragraph: {
         spacing: {
@@ -16,6 +17,8 @@ export declare const defaultStyles: ({
             before: number;
             after: number;
         };
+        indent?: undefined;
+        border?: undefined;
     };
 } | {
     id: string;
@@ -26,6 +29,7 @@ export declare const defaultStyles: ({
         font: string;
         size: number;
         bold: boolean;
+        italics?: undefined;
     };
     paragraph: {
         spacing: {
@@ -33,6 +37,8 @@ export declare const defaultStyles: ({
             after: number;
             line?: undefined;
         };
+        indent?: undefined;
+        border?: undefined;
     };
     basedOn?: undefined;
 } | {
@@ -45,6 +51,7 @@ export declare const defaultStyles: ({
         font: string;
         size: number;
         bold: boolean;
+        italics?: undefined;
     };
     paragraph: {
         spacing: {
@@ -52,6 +59,8 @@ export declare const defaultStyles: ({
             after: number;
             line?: undefined;
         };
+        indent?: undefined;
+        border?: undefined;
     };
 } | {
     id: string;
@@ -62,9 +71,57 @@ export declare const defaultStyles: ({
         size: number;
         font?: undefined;
         bold?: undefined;
+        italics?: undefined;
     };
     next?: undefined;
     paragraph?: undefined;
+} | {
+    id: string;
+    name: string;
+    basedOn: string;
+    quickFormat: boolean;
+    run: {
+        size: number;
+        font: string;
+        bold?: undefined;
+        italics?: undefined;
+    };
+    paragraph: {
+        indent: {
+            left: number;
+            right: number;
+        };
+        spacing?: undefined;
+        border?: undefined;
+    };
+    next?: undefined;
+} | {
+    id: string;
+    name: string;
+    basedOn: string;
+    quickFormat: boolean;
+    run: {
+        italics: boolean;
+        size?: undefined;
+        font?: undefined;
+        bold?: undefined;
+    };
+    paragraph: {
+        indent: {
+            left: number;
+            right?: undefined;
+        };
+        border: {
+            left: {
+                size: number;
+                space: number;
+                color: string;
+                value: string;
+            };
+        };
+        spacing?: undefined;
+    };
+    next?: undefined;
 })[];
 export declare const customLevels: {
     level: number;

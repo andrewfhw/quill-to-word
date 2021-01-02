@@ -57,6 +57,37 @@ export const defaultStyles = [{
     run: {
       size: 24
     }
+  },{
+    id: 'code_block',
+    name: 'Code Block',
+    basedOn: 'normal',
+    quickFormat: true,
+    run: {
+      size: 24,
+      font: 'Courier New'
+    },
+    paragraph: {
+      indent: { left: 720, right: 720 }
+    }
+  },{
+    id: 'block_quote',
+    name: 'Block Quote',
+    basedOn: 'normal',
+    quickFormat: true,
+    run: {
+      italics: true
+    },
+    paragraph: {
+      indent: { left: 540 },
+      border: {
+        left: {
+          size: 12,
+          space: 28,
+          color: '333333',
+          value: 'single'
+        }
+      }
+    }
   }];
   
 export const customLevels = [{

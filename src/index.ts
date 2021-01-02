@@ -3,21 +3,13 @@ import * as docx from 'docx';
 import { AlignmentType, HyperlinkRef, HyperlinkType, Media, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
 import { customLevels, defaultStyles } from './default-styles';
 
-interface DocxConfig {
-  styles: {
-    paragraphStyles: any
-  };
-  numbering: { config: object[] } | undefined;
-  hyperlinks: object | undefined;
-}
-
 let linkTracker = 0;
-let numberedTracker = 0;
+let numberedTracker = -1;
 
 // sets up the docx document
-function setupDoc(parsedDelta: ParsedQuillDelta): DocxConfig  {
-  let hyperlinks;
-  let numbering;
+function setupDoc(parsedDelta: ParsedQuillDelta): docx.Document  {
+  let hyperlinks: any = undefined;
+  let numbering: any = undefined;
   // build the hyperlinks property
   if (parsedDelta.setup.hyperlinks.length > 0) {
     hyperlinks = buildHyperlinks(parsedDelta.setup.hyperlinks);
@@ -26,15 +18,14 @@ function setupDoc(parsedDelta: ParsedQuillDelta): DocxConfig  {
   if (parsedDelta.setup.numberedLists > 0) {
     numbering = buildNumbering(parsedDelta.setup.numberedLists);
   }
-  const config: DocxConfig = {
+  const doc = new docx.Document({
     styles: {
       paragraphStyles: defaultStyles
     },
-    numbering: numbering ? numbering : undefined,
-    hyperlinks: hyperlinks ? hyperlinks : undefined
-  };
-  console.log('docConfig', config);
-  return config;
+    numbering: numbering,
+    hyperlinks: hyperlinks
+  });
+  return doc;
 }
 
 // build docx numbering object from quill numbered lists
@@ -58,7 +49,7 @@ function buildNumbering(numberOfLists: number): { config: object[] } {
 
 // build a docx hyperlinks object from the quill hyperlinks
 function buildHyperlinks(quillLinks: QHyperLink[]): object {
-  let hyperlinks: object = {};
+  let hyperlinks: any = {};
   let linkTracker = 0;
   // generate a new docx link object from each quill link; merge into hyperlinks object
   for (const link of quillLinks) {
@@ -78,8 +69,9 @@ function buildHyperlinks(quillLinks: QHyperLink[]): object {
 
 // main function to generate docx document
 export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[]): Promise<Blob> {
+  console.log('testing symlink');
   linkTracker = 0;
-  numberedTracker = 0;
+  numberedTracker = -1;
   let doc: docx.Document;
   // create a container for the docx doc sections
   const sections: Paragraph[][] = [];
@@ -101,8 +93,7 @@ export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | Par
   } else {
     throw new Error('Please provide a raw Quill Delta, a parsed Quill delta, or an Array of parsed Quill deltas. See QuillTodocx readme.');
   }
-  let docConfig = setupDoc(parsedDeltas[0]);
-  doc = new docx.Document(docConfig as any);
+  doc = setupDoc(parsedDeltas[0]);
   // build docx sections
   for (const delta of parsedDeltas) {
     // build sections
@@ -121,6 +112,7 @@ export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | Par
 
 // generate a section as an array of paragraphs
 function buildSection(quillParagraphs: QParagraph[], doc: docx.Document): Paragraph[] {
+  let quillParagraphTracker = 0;
   // create a container to hold the docx paragraphs
   const paragraphs: Paragraph[] = [];
   // build a docx paragraph from each delta paragraph
@@ -130,50 +122,56 @@ function buildSection(quillParagraphs: QParagraph[], doc: docx.Document): Paragr
         const image = Media.addImage(doc, paragraph.embed.image);
         paragraphs.push(new Paragraph(image));
       } else if (paragraph.embed?.video) {
-        // handle video embed **
+        const run = buildVideo(paragraph.embed.video);
+        paragraphs.push(new Paragraph({ children: [run] }));
       // if text runs
       } else if (paragraph.textRuns) {
-          paragraphs.push(new Paragraph({
-              children: buildParagraph(paragraph),
-              heading: paragraph.attributes?.header === 1 ? docx.HeadingLevel.HEADING_1 : paragraph.attributes?.header === 2 ? docx.HeadingLevel.HEADING_2 : undefined,
-              bullet: paragraph.attributes?.list === 'bullet' ? { level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
-              numbering: paragraph.attributes?.list === 'ordered' ? { reference: `numbered_${numberedTracker}`, level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
-              alignment: paragraph.attributes?.align === 'left' ? AlignmentType.LEFT : paragraph.attributes?.align === 'center' ? AlignmentType.CENTER : paragraph.attributes?.align === 'right' ? AlignmentType.RIGHT : paragraph.attributes?.align === 'justify' ? AlignmentType.JUSTIFIED : undefined,
-              // direction
-              // indent
-              // blockquote
-              // code block
-          }));
-          if (paragraph.attributes?.list === 'ordered') {
+        // handle ordered list tracking
+        if (quillParagraphTracker > 0 && paragraph.attributes?.list === 'ordered') {
+          if (quillParagraphs[quillParagraphTracker-1].attributes?.list === 'ordered') {
+            numberedTracker = numberedTracker;
+          } else {
             numberedTracker++;
           }
+        }
+        paragraphs.push(buildParagraph(paragraph));
       }
+      quillParagraphTracker++;
   };
   return paragraphs;
 }
 
 // generate a paragraph as an array of text runs
-function buildParagraph(paragraph: QParagraph): (TextRun | HyperlinkRef)[] {
+function buildParagraph(paragraph: QParagraph): Paragraph {
   // container to hold docx text runs
   const textRuns: (TextRun | HyperlinkRef)[] = [];
   // build a docx run from each delta run
   for (const run of paragraph.textRuns!) {
       // if formula
       if ((run as {formula: string}).formula) {
-        // handle formulas **
+        textRuns.push(buildFormula((run as { formula: string }).formula));
       // if text
       } else if ((run as QTextRun).text) {
-          textRuns.push(buildTextRun(run as QTextRun));
+          textRuns.push(buildTextRun(run as QTextRun, paragraph));
       }
   };
-  return textRuns;
+  const docxParagraph = new Paragraph({
+    children: textRuns,
+    heading: paragraph.attributes?.header === 1 ? docx.HeadingLevel.HEADING_1 : paragraph.attributes?.header === 2 ? docx.HeadingLevel.HEADING_2 : undefined,
+    bullet: paragraph.attributes?.list === 'bullet' ? { level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
+    numbering: paragraph.attributes?.list === 'ordered' ? { reference: `numbered_${numberedTracker}`, level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
+    alignment: paragraph.attributes?.align === 'left' ? AlignmentType.LEFT : paragraph.attributes?.align === 'center' ? AlignmentType.CENTER : paragraph.attributes?.align === 'right' ? AlignmentType.RIGHT : paragraph.attributes?.align === 'justify' ? AlignmentType.JUSTIFIED : undefined,
+    style: paragraph.attributes?.['code-block'] ? 'code_block' : paragraph.attributes?.blockquote ? 'block_quote' : undefined,
+    // bidirectional: paragraph.attributes?.direction === 'rtl' ? true : undefined,
+    // indent
+  });
+  return docxParagraph;
 }
 
 // generate a docx text run from quill text run
-function buildTextRun(run: QTextRun): TextRun | HyperlinkRef {
+function buildTextRun(run: QTextRun, paragraph: QParagraph): TextRun | HyperlinkRef {
   let textRun: TextRun | HyperlinkRef;
   if (run.attributes?.link) {
-    // handle link **
     textRun = new HyperlinkRef(`link${linkTracker}`);
     linkTracker++;
   } else {
@@ -186,21 +184,25 @@ function buildTextRun(run: QTextRun): TextRun | HyperlinkRef {
       strike: run.attributes?.strike ? true : false,
       underline: run.attributes?.underline ? { type: UnderlineType.SINGLE, color: undefined } : undefined,
       color: run.attributes?.color ? run.attributes?.color.slice(1) : undefined,
-      // size
+      size: run.attributes?.size === 'huge' ? 36 : run.attributes?.size === 'large' ? 32 : run.attributes?.size === 'small' ? 20 : undefined,
+      // rightToLeft: paragraph.attributes?.direction === 'rtl' ? true : undefined
       // font
-      // background color
-      // link
-  });
+      highlight: run.attributes?.background ? 'yellow' : undefined
+    });
   }
   return textRun;
 }
 
 // build a formula
 function buildFormula(formula: string) {
-
+  return new TextRun({
+    text: formula
+  });
 }
 
 // build a video
 function buildVideo(video: string) {
-
+  return new TextRun({
+    text: video
+  });
 }
