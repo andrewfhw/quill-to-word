@@ -27,5 +27,8 @@ export declare const ordered_simple: DocInputTest;
 export declare function orderedSimple(): Promise<Document>;
 export declare const embeds_simple: DocInputTest;
 export declare function embedsSimple(): Promise<Document>;
+export declare const parsed_delta: ParsedQuillDelta;
+export declare function parsedDelta(): Promise<Document>;
+export declare function parsedDeltaArray(): Promise<Document>;
 export {};
 //# sourceMappingURL=test-io.d.ts.map
