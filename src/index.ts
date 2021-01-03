@@ -13,7 +13,7 @@ function setupDoc(parsedDelta: ParsedQuillDelta): docx.Document  {
   // build the hyperlinks property
   if (parsedDelta.setup.hyperlinks.length > 0) {
     hyperlinks = buildHyperlinks(parsedDelta.setup.hyperlinks);
-  };
+  }
   // build the numbering property
   if (parsedDelta.setup.numberedLists > 0) {
     numbering = buildNumbering(parsedDelta.setup.numberedLists);
@@ -68,7 +68,7 @@ function buildHyperlinks(quillLinks: QHyperLink[]): object {
 }
 
 // main function to generate docx document
-export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[]): Promise<Blob> {
+export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[]): Promise<docx.Document> {
   console.log('testing symlink');
   linkTracker = 0;
   numberedTracker = -1;
@@ -106,8 +106,8 @@ export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | Par
     });
   };
   // create the blob
-  const blob = await Packer.toBlob(doc);
-  return blob;
+  // const blob = await Packer.toBlob(doc);
+  return doc;
 }
 
 // generate a section as an array of paragraphs
@@ -182,7 +182,7 @@ function buildTextRun(run: QTextRun, paragraph: QParagraph): TextRun | Hyperlink
       subScript: run.attributes?.script === 'sub' ? true : false,
       superScript: run.attributes?.script === 'super' ? true : false,
       strike: run.attributes?.strike ? true : false,
-      underline: run.attributes?.underline ? { type: UnderlineType.SINGLE, color: undefined } : undefined,
+      underline: run.attributes?.underline ? { type: UnderlineType.SINGLE, color: 'auto' } : undefined,
       color: run.attributes?.color ? run.attributes?.color.slice(1) : undefined,
       size: run.attributes?.size === 'huge' ? 36 : run.attributes?.size === 'large' ? 32 : run.attributes?.size === 'small' ? 20 : undefined,
       // rightToLeft: paragraph.attributes?.direction === 'rtl' ? true : undefined
