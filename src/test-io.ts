@@ -1008,3 +1008,191 @@ export async function embedsSimple(): Promise<Document> {
     return doc;
 }
 
+export const parsed_delta: ParsedQuillDelta = {
+    setup: {
+        hyperlinks: [],
+        numberedLists: 0
+    },
+    paragraphs: [{
+        textRuns: [{
+            text: 'Here is some text to enter into the first paragraph of the document. I am just writing miscellaneous stuff in here for basic testing. Sometimes we write stuff that is '
+        },{
+            text: 'bolded for emphasis',
+            attributes: {
+                bold: true
+            }
+        },{
+            text: ' but sometimes we do not. We can also try to '
+        },{
+            text: 'underline some content too.',
+            attributes: {
+                underline: true
+            }
+        },{
+            text: ' And then just start a new sentence.'
+        }]
+    },{
+        textRuns: [{
+            text: 'This is a Heading in the Document'
+        }],
+        attributes: {
+            header: 1
+        }
+    },{
+        textRuns: [{
+            text: 'This is a bullet point in the doc'
+        }],
+        attributes: {
+            list: 'bullet'
+        }
+    },{
+        textRuns: [{
+            text: 'Here is a bullet point that also has some '
+        },{
+            text: 'italicized text written in',
+            attributes: {
+                italic: true
+            }
+        }]
+    }]
+}
+
+export async function parsedDelta(): Promise<Document> {
+    const doc = new Document({
+        styles: {
+            paragraphStyles: defaultStyles
+        },
+        numbering: undefined,
+        hyperlinks: undefined
+    });
+    doc.addSection({
+        children: [
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'Here is some text to enter into the first paragraph of the document. I am just writing miscellaneous stuff in here for basic testing. Sometimes we write stuff that is '
+                    }),
+                    new TextRun({
+                        text: 'bolded for emphasis',
+                        bold: true
+                    }),
+                    new TextRun({
+                        text: ' but sometimes we do not. We can also try to '
+                    }),
+                    new TextRun({
+                        text: 'underline some content too.',
+                        underline: {
+                            color: 'auto',
+                            type: UnderlineType.SINGLE
+                        }
+                    }),
+                    new TextRun({
+                        text: ' And then just start a new sentence.'
+                    })
+                ]
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'This is a Heading in the Document'
+                    })
+                ],
+                heading: HeadingLevel.HEADING_1
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'This is a bullet point in the doc'
+                    })
+                ],
+                bullet: {
+                    level: 0
+                }
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'Here is a bullet point that also has some '
+                    }),
+                    new TextRun({
+                        text: 'italicized text written in',
+                        italics: true
+                    })
+                ]
+            })
+        ]
+    })
+    return doc;
+}
+
+export async function parsedDeltaArray(): Promise<Document> {
+    const doc = new Document({
+        styles: {
+            paragraphStyles: defaultStyles
+        },
+        numbering: undefined,
+        hyperlinks: undefined
+    });
+    const children = [
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: 'Here is some text to enter into the first paragraph of the document. I am just writing miscellaneous stuff in here for basic testing. Sometimes we write stuff that is '
+                }),
+                new TextRun({
+                    text: 'bolded for emphasis',
+                    bold: true
+                }),
+                new TextRun({
+                    text: ' but sometimes we do not. We can also try to '
+                }),
+                new TextRun({
+                    text: 'underline some content too.',
+                    underline: {
+                        color: 'auto',
+                        type: UnderlineType.SINGLE
+                    }
+                }),
+                new TextRun({
+                    text: ' And then just start a new sentence.'
+                })
+            ]
+        }),
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: 'This is a Heading in the Document'
+                })
+            ],
+            heading: HeadingLevel.HEADING_1
+        }),
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: 'This is a bullet point in the doc'
+                })
+            ],
+            bullet: {
+                level: 0
+            }
+        }),
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: 'Here is a bullet point that also has some '
+                }),
+                new TextRun({
+                    text: 'italicized text written in',
+                    italics: true
+                })
+            ]
+        })
+    ];
+    doc.addSection({
+        children: children
+    });
+    doc.addSection({
+        children: children
+    });
+    return doc;
+}

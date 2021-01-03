@@ -27,7 +27,9 @@ const config: Configuration = {
     plugins: [
         new CleanWebpackPlugin()
     ],
-    externals: {}
+    externals: {
+        docx: 'docx'
+    }
 };
 
 export default config;

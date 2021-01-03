@@ -19,5 +19,13 @@ export declare const block_quote_simple: DocInputTest;
 export declare function blockquoteSimple(): Promise<Document>;
 export declare const align_simple: DocInputTest;
 export declare function alignSimple(): Promise<Document>;
+export declare const bullet_simple: DocInputTest;
+export declare function bulletSimple(): Promise<Document>;
+export declare const bullet_formatted: DocInputTest;
+export declare function bulletFormatted(): Promise<Document>;
+export declare const ordered_simple: DocInputTest;
+export declare function orderedSimple(): Promise<Document>;
+export declare const embeds_simple: DocInputTest;
+export declare function embedsSimple(): Promise<Document>;
 export {};
 //# sourceMappingURL=test-io.d.ts.map
