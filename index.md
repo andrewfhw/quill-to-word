@@ -1,4 +1,4 @@
-# QuilltoWord
+# QuillToWord
 
 **Simple Description**: Turn the content in your [QuillJS](https://quilljs.com/) editor into a downloadable Microsoft Word document.
 
