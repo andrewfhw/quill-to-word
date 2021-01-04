@@ -1,14 +1,36 @@
 ![npm](https://img.shields.io/npm/v/quill-to-word) ![Travis (.com)](https://img.shields.io/travis/com/andrewraygilbert/quill-to-word) ![GitHub last commit](https://img.shields.io/github/last-commit/andrewraygilbert/quill-to-word) ![npm](https://img.shields.io/npm/dm/quill-to-word) ![GitHub issues](https://img.shields.io/github/issues/andrewraygilbert/quill-to-word) ![NPM](https://img.shields.io/npm/l/quill-to-word)
 
-# Quill to Word
+# QuillToWord
 
-Generate a Microsoft Word document from your [QuillJS](https://quilljs.com) contents.
+**Simple Description**: Turn the content in your [QuillJS](https://quilljs.com/) editor into a downloadable Microsoft Word document.
 
-## Installation
+**Technical Description**: Convert a QuillJS delta object into a .docx file.
 
-Install using npm.
+## How to Install
+
+Install using npm:
+
+```npm i quill-to-word --save```
+
+## How Do I Use It?
+
+Pass a QuillJS [delta](https://quilljs.com/docs/delta/) object to the `generateWord()` function of the `quill-to-word` package. Be sure to `await` the `generateWord()` function, because it returns a `Promise`.
 
 ```javascript
-npm i quill-to-word --save
+const quillDelta = quillInstance.getContents();
+const doc = await quillToWord.generateWord(quillDelta);
 ```
 
+`quillInstance` refers to the object created by calling `new Quill()`.
+
+## What Does the Package Do?
+
+This package creates a Microsoft Word DOCX file from a QuillJS Delta. In short, this package will allow you to download the contents of your QuillJS in-browser editor as a Word document.
+
+## How Does It Work?
+
+QuillJS stores its content in a delta format. QuillToWord parses a Quill delta object into a paragraph format using [QuillJSParser](https://github.com/andrewraygilbert/quilljs-parser). Then, QuillToWord generates a Word document, using the popular [DOCX package](https://docx.js.org/#/).
+
+## How Can I Configure QuillToWord?
+
+Configuration options are coming.
