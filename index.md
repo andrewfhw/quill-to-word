@@ -1,8 +1,8 @@
 # Quill to Word
 
-**Simple**: Turn the content in your QuillJS editor into a downloadable Microsoft Word document.
+**Simple Description**: Turn the content in your [QuillJS](https://quilljs.com/) editor into a downloadable Microsoft Word document.
 
-**Technical**: Convert a QuillJS delta object into a .docx file.
+**Technical Description**: Convert a QuillJS delta object into a .docx file.
 
 ## How to Install
 
@@ -25,4 +25,10 @@ const doc = await quillToWord.generateWord(quillDelta);
 
 This package creates a Microsoft Word DOCX file from a QuillJS Delta. In short, this package will allow you to download the contents of your QuillJS in-browser editor as a Word document.
 
+## How Does It Work?
 
+QuillJS stores its content in a delta format. QuillToWord parses a Quill delta object into a paragraph format using [QuillJSParser](https://github.com/andrewraygilbert/quilljs-parser). Then, QuillToWord generates a Word document, using the popular [DOCX package](https://docx.js.org/#/).
+
+## How Can I Configure QuillToWord?
+
+Configuration options are coming.
