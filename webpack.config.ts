@@ -25,7 +25,7 @@ const config: Configuration = {
         libraryTarget: 'umd'
     },
     plugins: [
-        new CleanWebpackPlugin()
+        new CleanWebpackPlugin(),
     ],
     externals: {
         docx: 'docx'
