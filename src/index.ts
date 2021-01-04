@@ -68,7 +68,7 @@ function buildHyperlinks(quillLinks: QHyperLink[]): object {
 }
 
 // main function to generate docx document
-export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[]): Promise<docx.Document> {
+export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[], config?: object): Promise<docx.Document> {
   console.log('testing symlink');
   linkTracker = 0;
   numberedTracker = -1;
