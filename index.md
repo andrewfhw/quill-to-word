@@ -9,3 +9,20 @@
 Install using npm:
 
 ```npm i quill-to-word --save```
+
+## How Do I Use It?
+
+Pass a QuillJS [delta](https://quilljs.com/docs/delta/) object to the `generateWord()` function of the `quill-to-word` package. Be sure to `await` the `generateWord()` function, because it returns a `Promise`.
+
+```javascript
+const quillDelta = quillInstance.getContents();
+const doc = await quillToWord.generateWord(quillDelta);
+```
+
+`quillInstance` refers to the object created by calling `new Quill()`.
+
+## What Does the Package Do?
+
+This package creates a Microsoft Word DOCX file from a QuillJS Delta. In short, this package will allow you to download the contents of your QuillJS in-browser editor as a Word document.
+
+
