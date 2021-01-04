@@ -87,7 +87,7 @@ describe('converts quill to docx', () => {
         expect(input).toEqual(output);
     });
 
-    test.only('parsed delta array', async () => {
+    test('parsed delta array', async () => {
         const input = await generateWord([parsed_delta, parsed_delta]);
         const output = await parsedDeltaArray();
         expect(input).toEqual(output);
