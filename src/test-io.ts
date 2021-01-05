@@ -1,6 +1,6 @@
 import { Document, Paragraph, TextRun, UnderlineType, HyperlinkType, HyperlinkRef, HeadingLevel, AlignmentType } from 'docx';
 import { RawQuillDelta, ParsedQuillDelta } from 'quilljs-parser';
-import { Config } from '.';
+import { Config } from './interfaces';
 import { customLevels, defaultStyles } from './default-styles';
 
 type DocInputTest = RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[];

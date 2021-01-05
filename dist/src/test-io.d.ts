@@ -1,5 +1,6 @@
 import { Document } from 'docx';
 import { RawQuillDelta, ParsedQuillDelta } from 'quilljs-parser';
+import { Config } from './interfaces';
 declare type DocInputTest = RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[];
 export declare const blank_doc_input: DocInputTest;
 export declare function blankDocOutput(): Promise<Document>;
@@ -30,5 +31,17 @@ export declare function embedsSimple(): Promise<Document>;
 export declare const parsed_delta: ParsedQuillDelta;
 export declare function parsedDelta(): Promise<Document>;
 export declare function parsedDeltaArray(): Promise<Document>;
+export declare const custom_styles_delta: DocInputTest;
+export declare const custom_style_header: Config;
+export declare function customStyleHeader(): Promise<Document>;
+export declare const custom_style_normal: Config;
+export declare function customStyleNormal(): Promise<Document>;
+export declare const custom_style_block_quote: Config;
+export declare function customStyleBlockquote(): Promise<Document>;
+export declare const custom_style_code_block: Config;
+export declare const custom_code_delta: DocInputTest;
+export declare function customCodeStyle(): Promise<Document>;
+export declare const custom_style_list: Config;
+export declare function customListStyle(): Promise<Document>;
 export {};
 //# sourceMappingURL=test-io.d.ts.map
