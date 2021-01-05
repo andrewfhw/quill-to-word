@@ -2,12 +2,105 @@ import { ParsedQuillDelta, Paragraph as QParagraph, TextRun as QTextRun, parseQu
 import * as docx from 'docx';
 import { AlignmentType, HyperlinkRef, HyperlinkType, Media, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
 import { customLevels, defaultStyles } from './default-styles';
+import { Config, ExportObject, StyleConfig, StyleProperties } from './interfaces';
+
 
 let linkTracker = 0;
 let numberedTracker = -1;
+let styles = defaultStyles;
+
+// main public function to generate docx document
+export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[], config?: Config): Promise<ExportObject> {
+  linkTracker = 0; // reset link tracker
+  numberedTracker = -1; // reset numered list tracker
+  let doc: docx.Document;
+  // create a container for the docx doc sections
+  const sections: Paragraph[][] = [];
+  // create a container for the parsed Quill deltas
+  const parsedDeltas: ParsedQuillDelta[] = [];
+  // if input is a raw quill delta
+  if ((delta as RawQuillDelta).ops) {
+    const parsedDelta = parseQuillDelta(delta as RawQuillDelta);
+    parsedDeltas.push(parsedDelta);
+  // if input is an array of parsed quill deltas
+  } else if (Array.isArray(delta)) {
+    for (const eachDelta of delta) {
+      parsedDeltas.push(eachDelta);
+    };
+  // if input is a single parsed quill delta
+  } else if ((delta as ParsedQuillDelta).paragraphs) {
+    parsedDeltas.push(delta as ParsedQuillDelta);
+  // if input is not recognized
+  } else {
+    throw new Error('Please provide a raw Quill Delta, a parsed Quill delta, or an Array of parsed Quill deltas. See QuillTodocx readme.');
+  }
+  // set up the docx document based on configuration
+  doc = setupDoc(parsedDeltas[0], config);
+  // build docx sections
+  for (const delta of parsedDeltas) {
+    sections.push(buildSection(delta.paragraphs, doc));
+  };
+  // add docx sections to doc
+  for (const section of sections) {
+    doc.addSection({
+        children: section
+    });
+  };
+  // return the appropriate export object based on configuration
+  return exportDoc(doc, config);
+}
+
+// set a style's paragraph and run properties
+function setStyle(style: StyleProperties, styleId: string, index: number) {
+  if (style.paragraph) {
+    styles[index].paragraph = style.paragraph as any;
+  }
+  if (style.run) {
+    styles[index].run = style.run as any;
+  }
+}
+
+// apply custom paragraph styles from the user
+function setParagraphsStyles(paragraphStyles: StyleConfig) {
+  if (paragraphStyles.normal) {
+    const index = styles.findIndex(style => style.id === 'normal');
+    setStyle(paragraphStyles.normal, 'normal', index);
+  }
+  if (paragraphStyles.header_1) {
+    const index = styles.findIndex(style => style.id === 'header_1');
+    setStyle(paragraphStyles.header_1, 'header_1', index);
+  }
+  if (paragraphStyles.header_2) {
+    const index = styles.findIndex(style => style.id === 'header_2');
+    setStyle(paragraphStyles.header_2, 'header_2', index);
+  }
+  if (paragraphStyles.list_paragraph) {
+    const index = styles.findIndex(style => style.id === 'list_paragraph');
+    setStyle(paragraphStyles.list_paragraph, 'list_paragraph', index);
+  }
+  if (paragraphStyles.code_block) {
+    const index = styles.findIndex(style => style.id === 'code_block');
+    setStyle(paragraphStyles.code_block, 'code_block', index);
+  }
+  if (paragraphStyles.block_quote) {
+    const index = styles.findIndex(style => style.id === 'block_quote');
+    setStyle(paragraphStyles.block_quote, 'block_quote', index);
+  }
+}
+
+// apply custom configuration from the user
+function setupConfig(config: Config) {
+  if (config.paragraphStyles) {
+    setParagraphsStyles(config.paragraphStyles);
+  }
+}
 
 // sets up the docx document
-function setupDoc(parsedDelta: ParsedQuillDelta): docx.Document  {
+function setupDoc(parsedDelta: ParsedQuillDelta, config?: Config): docx.Document  {
+  styles = defaultStyles; // reset back to original
+  if (config) {
+    setupConfig(config);
+  }
   let hyperlinks: any = undefined;
   let numbering: any = undefined;
   // build the hyperlinks property
@@ -20,12 +113,30 @@ function setupDoc(parsedDelta: ParsedQuillDelta): docx.Document  {
   }
   const doc = new docx.Document({
     styles: {
-      paragraphStyles: defaultStyles
+      paragraphStyles: styles
     },
     numbering: numbering,
     hyperlinks: hyperlinks
   });
   return doc;
+}
+
+// export the appropriate object based on configuration
+async function exportDoc(doc: docx.Document, config?: Config): Promise<ExportObject> {
+  if (!config || !config.exportAs || config.exportAs === 'doc') {
+    return doc;
+  }
+  if (config.exportAs === 'blob') {
+    return Packer.toBlob(doc);
+  }
+  if (config.exportAs === 'buffer') {
+    console.log('returning buffer');
+    return Packer.toBuffer(doc);
+  }
+  if (config.exportAs === 'base64') {
+    return Packer.toBase64String(doc);
+  }
+  throw new Error('Please set exportAs configuration to blob, buffer, doc, or base64.');
 }
 
 // build docx numbering object from quill numbered lists
@@ -65,49 +176,6 @@ function buildHyperlinks(quillLinks: QHyperLink[]): object {
     linkTracker++;
   };
   return hyperlinks;
-}
-
-// main function to generate docx document
-export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[], config?: object): Promise<docx.Document> {
-  console.log('testing symlink');
-  linkTracker = 0;
-  numberedTracker = -1;
-  let doc: docx.Document;
-  // create a container for the docx doc sections
-  const sections: Paragraph[][] = [];
-  // create a container for the parsed Quill deltas
-  const parsedDeltas: ParsedQuillDelta[] = [];
-  // if input is a raw quill delta
-  if ((delta as RawQuillDelta).ops) {
-    const parsedDelta = parseQuillDelta(delta as RawQuillDelta);
-    parsedDeltas.push(parsedDelta);
-  // if input is an array of parsed quill deltas
-  } else if (Array.isArray(delta)) {
-    for (const eachDelta of delta) {
-      parsedDeltas.push(eachDelta);
-    };
-  // if input is a single parsed quill delta
-  } else if ((delta as ParsedQuillDelta).paragraphs) {
-    parsedDeltas.push(delta as ParsedQuillDelta);
-  // if input is not recognized
-  } else {
-    throw new Error('Please provide a raw Quill Delta, a parsed Quill delta, or an Array of parsed Quill deltas. See QuillTodocx readme.');
-  }
-  doc = setupDoc(parsedDeltas[0]);
-  // build docx sections
-  for (const delta of parsedDeltas) {
-    // build sections
-    sections.push(buildSection(delta.paragraphs, doc));
-  };
-  // add docx sections to doc
-  for (const section of sections) {
-    doc.addSection({
-        children: section
-    });
-  };
-  // create the blob
-  // const blob = await Packer.toBlob(doc);
-  return doc;
 }
 
 // generate a section as an array of paragraphs

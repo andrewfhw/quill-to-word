@@ -1,10 +1,9 @@
-import { Document, Paragraph, TextRun, Packer, UnderlineType, HyperlinkType, HyperlinkRef, HeadingLevel, AlignmentType, Media } from 'docx';
-import { chdir } from 'process';
+import { Document, Paragraph, TextRun, UnderlineType, HyperlinkType, HyperlinkRef, HeadingLevel, AlignmentType } from 'docx';
 import { RawQuillDelta, ParsedQuillDelta } from 'quilljs-parser';
+import { Config } from '.';
 import { customLevels, defaultStyles } from './default-styles';
 
 type DocInputTest = RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[];
-type DocOutputFn = () => Promise<Document>;
 
 export const blank_doc_input: DocInputTest = {
     ops: [{
@@ -1193,6 +1192,443 @@ export async function parsedDeltaArray(): Promise<Document> {
     });
     doc.addSection({
         children: children
+    });
+    return doc;
+}
+
+export const custom_styles_delta: DocInputTest = {
+    ops: [{
+        insert: 'This Is a Heading Level One'
+    },{
+        insert: '\n',
+        attributes: {
+            header: 1
+        }
+    },{
+        insert: 'Here is just some basic text writing into the document.\nThen we start a new paragraph in the editor.\nA Level Two Heading'
+    },{
+        insert: '\n',
+        attributes: {
+            header: 2
+        }
+    }]
+};
+
+export const custom_style_header: Config = {
+    paragraphStyles: {
+        header_1: {
+            run: {
+                size: 60,
+                bold: true,
+                color: 'ff0055'
+            },
+            paragraph: {
+                spacing: {
+                    before: 800,
+                    after: 600
+                }
+            }
+        }
+    }
+}
+
+function customHeader() {
+    const style = defaultStyles;
+    const index = style.findIndex(style => style.id === 'header_1');
+    style[index].paragraph = {
+        spacing: {
+            before: 800,
+            after: 600
+        }
+    };
+    style[index].run = {
+        size: 60,
+        bold: true,
+        color: 'ff0055'
+    } as any
+    return style;
+}
+
+export async function customStyleHeader(): Promise<Document> {
+    const doc = new Document({
+        styles: {
+            paragraphStyles: customHeader()
+        },
+        numbering: undefined,
+        hyperlinks: undefined
+    });
+    doc.addSection({
+        children: [
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'This Is a Heading Level One'
+                    })
+                ],
+                heading: HeadingLevel.HEADING_1
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'Here is just some basic text writing into the document.'
+                    })
+                ]
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'Then we start a new paragraph in the editor.'
+                    })
+                ]
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'A Level Two Heading'
+                    })
+                ],
+                heading: HeadingLevel.HEADING_2
+            }),
+            new Paragraph({
+                children: []
+            })
+        ]
+    });
+    return doc;
+};
+
+export const custom_style_normal: Config = {
+    paragraphStyles: {
+        normal: {
+            paragraph: {
+                spacing: {
+                    line: 100
+                }
+            },
+            run: {
+                font: 'Calibri',
+                size: 28
+            }
+        }
+    }
+}
+
+function customNormal() {
+    const styles = defaultStyles;
+    const index = styles.findIndex(style => style.id === 'normal');
+    styles[index].paragraph = custom_style_normal.paragraphStyles?.normal?.paragraph as any;
+    styles[index].run = custom_style_normal.paragraphStyles?.normal?.run as any;
+    return styles;
+}
+
+export async function customStyleNormal() {
+    const doc = new Document({
+        styles: {
+            paragraphStyles: customNormal()
+        },
+        numbering: undefined,
+        hyperlinks: undefined
+    });
+    doc.addSection({
+        children: [
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'This Is a Heading Level One'
+                    })
+                ],
+                heading: HeadingLevel.HEADING_1
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'Here is just some basic text writing into the document.'
+                    })
+                ]
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'Then we start a new paragraph in the editor.'
+                    })
+                ]
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'A Level Two Heading'
+                    })
+                ],
+                heading: HeadingLevel.HEADING_2
+            }),
+            new Paragraph({
+                children: []
+            })
+        ]
+    });
+    return doc;
+}
+
+export const custom_style_block_quote: Config = {
+    paragraphStyles: {
+        block_quote: {
+            paragraph: {
+                indent: {
+                    left: 2400,
+                    hanging: 2600
+                }
+            },
+            run: {
+                italics: false,
+                size: 20,
+                highlight: 'yellow'
+            }
+        }
+    }
+}
+
+function customBlockquote() {
+    const styles = defaultStyles;
+    const index = styles.findIndex(style => style.id === 'block_quote');
+    styles[index].paragraph = custom_style_block_quote.paragraphStyles?.block_quote?.paragraph as any;
+    styles[index].run = custom_style_block_quote.paragraphStyles?.block_quote?.run as any;
+    return styles;
+}
+
+export async function customStyleBlockquote() {
+    const doc = new Document({
+        styles: {
+            paragraphStyles: customBlockquote()
+        },
+        numbering: undefined,
+        hyperlinks: undefined
+    });
+    doc.addSection({
+        children: [
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'This Is a Heading Level One'
+                    })
+                ],
+                heading: HeadingLevel.HEADING_1
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'Here is just some basic text writing into the document.'
+                    })
+                ]
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'Then we start a new paragraph in the editor.'
+                    })
+                ]
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'A Level Two Heading'
+                    })
+                ],
+                heading: HeadingLevel.HEADING_2
+            }),
+            new Paragraph({
+                children: []
+            })
+        ]
+    });
+    return doc;
+}
+
+export const custom_style_code_block: Config = {
+    paragraphStyles: {
+        code_block: {
+            paragraph: {
+                alignment: AlignmentType.CENTER,
+                spacing: {
+                    after: 1400
+                }
+            },
+            run: {
+                italics: true,
+                size: 10,
+                font: 'Arial'
+            }
+        }
+    }
+}
+
+export const custom_code_delta: DocInputTest = {
+    ops: [{
+        insert: 'This is a basic test of custom styles.\nconst new Quill();'
+    },{
+        insert: '\n',
+        attributes: {
+            "code-block": true
+        }
+    },{
+        insert: 'End of the code block and start normal text.\n'
+    }]
+};
+
+function customCode() {
+    const styles = defaultStyles;
+    const index = styles.findIndex(style => style.id === 'code_block');
+    styles[index].paragraph = custom_style_code_block.paragraphStyles?.code_block?.paragraph as any;
+    styles[index].run = custom_style_code_block.paragraphStyles?.code_block?.run as any;
+    return styles;
+}
+
+export async function customCodeStyle() {
+    const doc = new Document({
+        styles: {
+            paragraphStyles: customCode()
+        },
+        numbering: undefined,
+        hyperlinks: undefined
+    });
+    doc.addSection({
+        children: [
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'This is a basic test of custom styles.'
+                    })
+                ]
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'const new Quill();'
+                    })
+                ],
+                style: 'code_block'
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'End of the code block and start normal text.'
+                    })
+                ]
+            }),
+            new Paragraph({
+                children: []
+            })
+        ]
+    });
+    return doc;
+}
+
+export const custom_style_list: Config = {
+    paragraphStyles: {
+        list_paragraph: {
+            paragraph: {
+                spacing: {
+                    before: 850,
+                    after: 600
+                },
+                indent: {
+                    left: 1440,
+                    hanging: 1800
+                }
+            },
+            run: {
+                italics: true,
+                size: 26
+            }
+        }
+    }
+};
+
+function customList() {
+    const styles = defaultStyles;
+    const index = styles.findIndex(style => style.id === 'list_paragraph');
+    styles[index].paragraph = custom_style_list.paragraphStyles?.list_paragraph?.paragraph as any;
+    styles[index].run = custom_style_list.paragraphStyles?.list_paragraph?.run as any;
+    return styles;
+}
+
+export async function customListStyle() {
+    const doc = new Document({
+        styles: {
+            paragraphStyles: customList()
+        },
+        numbering: undefined,
+        hyperlinks: undefined
+    });
+    doc.addSection({
+        children: [
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'Below I will compose a bulleted list.'
+                    })
+                ]
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'Here is the first item in the list'
+                    })
+                ],
+                bullet: {
+                    level: 0
+                }
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'This is the second bullet in the list'
+                    })
+                ],
+                bullet: {
+                    level: 0
+                }
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'This is an indented bullet point'
+                    })
+                ],
+                bullet: {
+                    level: 1
+                }
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'Here is another indented bullet point'
+                    })
+                ],
+                bullet: {
+                    level: 1
+                }
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'This is back to the main level of the list'
+                    })
+                ],
+                bullet: {
+                    level: 0
+                }
+            }),
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: 'Now we make sure that the list terminates'
+                    })
+                ]
+            }),
+            new Paragraph({
+                children: []
+            })
+        ]
     });
     return doc;
 }
