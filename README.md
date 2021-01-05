@@ -57,7 +57,7 @@ saveAs(docAsBlob, 'word-export.docx');
 
 ## How Can I Configure QuillToWord?
 
-QuillToWord supports two configurable options: export configuration and style configuration.
+QuillToWord supports two configurable options: **export** configuration and **style** configuration.
 
 ### Export Configuration
 
