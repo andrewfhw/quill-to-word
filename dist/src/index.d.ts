@@ -1,4 +1,3 @@
-import { ParsedQuillDelta, RawQuillDelta } from 'quilljs-parser';
-import { Config, ExportObject } from './interfaces';
-export declare function generateWord(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[], config?: Config): Promise<ExportObject>;
+export * from './exporter';
+export * from './interfaces';
 //# sourceMappingURL=index.d.ts.map
