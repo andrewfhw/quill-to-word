@@ -13,6 +13,7 @@
     },
     "exclude": [
         "node_modules",
-        "webpack.config.ts"
+        "webpack.config.ts",
+        "dist"
     ]
 }

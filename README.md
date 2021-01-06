@@ -6,6 +6,8 @@
 
 **Technical Description**: Convert a QuillJS delta object into a .docx file.
 
+Check out a live Angular demo on [Stackblitz](https://stackblitz.com/edit/quill-to-word-demo?file=src/app/app.component.css).
+
 ## How to Install
 
 Install using npm:
