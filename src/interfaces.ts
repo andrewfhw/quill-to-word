@@ -42,6 +42,7 @@ export interface StyleConfig {
   list_paragraph?: StyleProperties;
   code_block?: StyleProperties;
   block_quote?: StyleProperties;
+  citation?: StyleProperties;
 }
 
 export interface Config {

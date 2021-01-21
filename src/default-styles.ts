@@ -88,6 +88,17 @@ export const defaultStyles = [{
         }
       }
     }
+  },{
+    id: 'citation',
+    name: 'Citation',
+    basedOn: 'normal',
+    quickFormat: true,
+    paragraph: {
+      indent: {
+        left: 720,
+        hanging: 720
+      }
+    }
   }];
   
 export const customLevels = [{

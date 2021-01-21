@@ -86,6 +86,10 @@ function setParagraphsStyles(paragraphStyles: StyleConfig) {
     const index = styles.findIndex(style => style.id === 'block_quote');
     setStyle(paragraphStyles.block_quote, 'block_quote', index);
   }
+  if (paragraphStyles.citation) {
+    const index = styles.findIndex(style => style.id === 'citation');
+    setStyle(paragraphStyles.citation, 'citation', index);
+  }
 }
 
 // apply custom configuration from the user
