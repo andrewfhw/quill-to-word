@@ -1,13 +1,21 @@
-import { ParsedQuillDelta, Paragraph as QParagraph, TextRun as QTextRun, parseQuillDelta, RawQuillDelta, QHyperLink } from 'quilljs-parser';
+import { ParsedQuillDelta, Paragraph as QParagraph, TextRun as QTextRun, parseQuillDelta, RawQuillDelta, QHyperLink, LineAttributes } from 'quilljs-parser';
 import * as docx from 'docx';
 import { AlignmentType, HyperlinkRef, HyperlinkType, Media, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
 import { customLevels, defaultStyles } from './default-styles';
-import { Config, ExportObject, StyleConfig, StyleProperties } from './interfaces';
+import { Config, CustomLevels, ExportObject, StyleConfig, StyleProperties } from './interfaces';
 
+interface LineAttr extends LineAttributes {
+  citation: boolean;
+}
+
+interface ParagraphAlt extends QParagraph {
+  attributes: LineAttr;
+}
 
 let linkTracker = 0;
 let numberedTracker = -1;
 let styles = defaultStyles;
+let levels: CustomLevels[] = customLevels;
 
 // main public function to generate docx document
 export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[], config?: Config): Promise<ExportObject> {
@@ -97,11 +105,15 @@ function setupConfig(config: Config) {
   if (config.paragraphStyles) {
     setParagraphsStyles(config.paragraphStyles);
   }
+  if (config.customLevels) {
+    levels = config.customLevels;
+  }
 }
 
 // sets up the docx document
 function setupDoc(parsedDelta: ParsedQuillDelta, config?: Config): docx.Document  {
   styles = defaultStyles; // reset back to original
+  levels = customLevels; // reset back to original
   if (config) {
     setupConfig(config);
   }
@@ -151,7 +163,7 @@ function buildNumbering(numberOfLists: number): { config: object[] } {
   while (numberTracker < numberOfLists) {
     const newList = {
       reference: `numbered_${numberTracker}`,
-      levels: customLevels
+      levels: levels
     };
     config.push(newList);
     numberTracker++;
@@ -233,7 +245,7 @@ function buildParagraph(paragraph: QParagraph): Paragraph {
     bullet: paragraph.attributes?.list === 'bullet' ? { level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
     numbering: paragraph.attributes?.list === 'ordered' ? { reference: `numbered_${numberedTracker}`, level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
     alignment: paragraph.attributes?.align === 'left' ? AlignmentType.LEFT : paragraph.attributes?.align === 'center' ? AlignmentType.CENTER : paragraph.attributes?.align === 'right' ? AlignmentType.RIGHT : paragraph.attributes?.align === 'justify' ? AlignmentType.JUSTIFIED : undefined,
-    style: paragraph.attributes?.['code-block'] ? 'code_block' : paragraph.attributes?.blockquote ? 'block_quote' : undefined,
+    style: paragraph.attributes?.['code-block'] ? 'code_block' : paragraph.attributes?.blockquote ? 'block_quote' : (paragraph as ParagraphAlt).attributes?.citation ? 'citation' : undefined,
     // bidirectional: paragraph.attributes?.direction === 'rtl' ? true : undefined,
     // indent
   });

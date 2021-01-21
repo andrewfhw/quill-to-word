@@ -45,6 +45,6 @@
   },
   "dependencies": {
     "docx": "^5.4.1",
-    "quilljs-parser": "^1.0.9"
+    "quilljs-parser": "^1.0.12"
   }
 }

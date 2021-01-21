@@ -90,6 +90,7 @@ export declare const defaultStyles: ({
         indent: {
             left: number;
             right: number;
+            hanging?: undefined;
         };
         spacing?: undefined;
         border?: undefined;
@@ -110,6 +111,7 @@ export declare const defaultStyles: ({
         indent: {
             left: number;
             right?: undefined;
+            hanging?: undefined;
         };
         border: {
             left: {
@@ -120,6 +122,31 @@ export declare const defaultStyles: ({
             };
         };
         spacing?: undefined;
+    };
+    next?: undefined;
+} | {
+    id: string;
+    name: string;
+    basedOn: string;
+    quickFormat: boolean;
+    run: {
+        size: number;
+        font?: undefined;
+        bold?: undefined;
+        italics?: undefined;
+    };
+    paragraph: {
+        indent: {
+            left: number;
+            hanging: number;
+            right?: undefined;
+        };
+        spacing: {
+            line: number;
+            before?: undefined;
+            after?: undefined;
+        };
+        border?: undefined;
     };
     next?: undefined;
 })[];

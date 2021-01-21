@@ -1,4 +1,5 @@
 import { AlignmentType } from 'docx';
+import { CustomLevels } from './interfaces';
 
 export const defaultStyles = [{
     id: 'normal',
@@ -93,15 +94,21 @@ export const defaultStyles = [{
     name: 'Citation',
     basedOn: 'normal',
     quickFormat: true,
+    run: {
+      size: 24
+    },
     paragraph: {
       indent: {
-        left: 720,
-        hanging: 720
+        left: 0,
+        hanging: 320
+      },
+      spacing: {
+        line: 480
       }
     }
   }];
   
-export const customLevels = [{
+export const customLevels: CustomLevels[] = [{
     level: 0,
     format: 'decimal',
     text: '%1.',
