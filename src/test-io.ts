@@ -1,7 +1,7 @@
 import { Document, Paragraph, TextRun, UnderlineType, HyperlinkType, HyperlinkRef, HeadingLevel, AlignmentType } from 'docx';
 import { RawQuillDelta, ParsedQuillDelta } from 'quilljs-parser';
 import { Config } from './interfaces';
-import { customLevels, defaultStyles } from './default-styles';
+import { customNumberedLevels, defaultStyles } from './default-styles';
 
 type DocInputTest = RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[];
 
@@ -832,10 +832,10 @@ export async function orderedSimple(): Promise<Document> {
         numbering: {
             config: [{
                 reference: 'numbered_0',
-                levels: customLevels
+                levels: customNumberedLevels
             },{
                 reference: 'numbered_1',
-                levels: customLevels
+                levels: customNumberedLevels
             }]
         },
         hyperlinks: undefined

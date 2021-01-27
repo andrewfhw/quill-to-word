@@ -1,8 +1,8 @@
 import { ParsedQuillDelta, Paragraph as QParagraph, TextRun as QTextRun, parseQuillDelta, RawQuillDelta, QHyperLink, LineAttributes } from 'quilljs-parser';
 import * as docx from 'docx';
-import { AlignmentType, HyperlinkRef, HyperlinkType, Media, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
-import { customLevels, defaultStyles } from './default-styles';
-import { Config, CustomLevels, ExportObject, StyleConfig, StyleProperties } from './interfaces';
+import { AlignmentType, HyperlinkRef, HyperlinkType, Media, Numbering, Packer, Paragraph, TextRun, UnderlineType } from 'docx';
+import { customBulletLevels, customNumberedLevels, defaultStyles } from './default-styles';
+import { Config, CustomLevels, ExportObject, NumberedList, NumberingConfig, StyleConfig, StyleProperties } from './interfaces';
 
 interface LineAttr extends LineAttributes {
   citation: boolean;
@@ -15,12 +15,14 @@ interface ParagraphAlt extends QParagraph {
 let linkTracker = 0;
 let numberedTracker = -1;
 let styles = defaultStyles;
-let levels: CustomLevels[] = customLevels;
+let levels: CustomLevels[] = customNumberedLevels;
+let customBullets = false;
 
 // main public function to generate docx document
 export async function generateWord(delta: RawQuillDelta | ParsedQuillDelta | ParsedQuillDelta[], config?: Config): Promise<ExportObject> {
   linkTracker = 0; // reset link tracker
   numberedTracker = -1; // reset numered list tracker
+  customBullets = false; // reset custom bullets
   let doc: docx.Document;
   // create a container for the docx doc sections
   const sections: Paragraph[][] = [];
@@ -113,12 +115,12 @@ function setupConfig(config: Config) {
 // sets up the docx document
 function setupDoc(parsedDelta: ParsedQuillDelta, config?: Config): docx.Document  {
   styles = defaultStyles; // reset back to original
-  levels = customLevels; // reset back to original
+  levels = customNumberedLevels; // reset back to original
   if (config) {
     setupConfig(config);
   }
   let hyperlinks: any = undefined;
-  let numbering: any = undefined;
+  let numbering: NumberingConfig | undefined = undefined;
   // build the hyperlinks property
   if (parsedDelta.setup.hyperlinks.length > 0) {
     hyperlinks = buildHyperlinks(parsedDelta.setup.hyperlinks);
@@ -126,6 +128,10 @@ function setupDoc(parsedDelta: ParsedQuillDelta, config?: Config): docx.Document
   // build the numbering property
   if (parsedDelta.setup.numberedLists > 0) {
     numbering = buildNumbering(parsedDelta.setup.numberedLists);
+  }
+  if (config?.customBulletLevels) {
+    numbering = addCustomBullets(numbering, config.customBulletLevels);
+    customBullets = true;
   }
   const doc = new docx.Document({
     styles: {
@@ -156,7 +162,7 @@ async function exportDoc(doc: docx.Document, config?: Config): Promise<ExportObj
 }
 
 // build docx numbering object from quill numbered lists
-function buildNumbering(numberOfLists: number): { config: object[] } {
+function buildNumbering(numberOfLists: number): NumberingConfig {
   let config: any[] = [];
   let numberTracker = 0;
   // create a new docx numbering object for each quill numbered list
@@ -172,6 +178,22 @@ function buildNumbering(numberOfLists: number): { config: object[] } {
     config: config
   };
   return numberConfig;
+}
+
+// adds a custom bullet styled list to the numbering configuration
+function addCustomBullets(numberConfig: NumberingConfig | undefined, bulletLevels: CustomLevels[]): NumberingConfig {
+  const customBullets: NumberedList = {
+    reference: 'customBullets',
+    levels: bulletLevels
+  };
+  if (numberConfig) {
+    numberConfig.config.push(customBullets);
+    return numberConfig;
+  } else {
+    return {
+      config: [customBullets]
+    }
+  }
 }
 
 // build a docx hyperlinks object from the quill hyperlinks
@@ -241,10 +263,15 @@ function buildParagraph(paragraph: QParagraph): Paragraph {
   };
   const docxParagraph = new Paragraph({
     children: textRuns,
+    
     heading: paragraph.attributes?.header === 1 ? docx.HeadingLevel.HEADING_1 : paragraph.attributes?.header === 2 ? docx.HeadingLevel.HEADING_2 : undefined,
-    bullet: paragraph.attributes?.list === 'bullet' ? { level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
-    numbering: paragraph.attributes?.list === 'ordered' ? { reference: `numbered_${numberedTracker}`, level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
+
+    bullet: paragraph.attributes?.list === 'bullet' && !customBullets ? { level: paragraph.attributes.indent ? paragraph.attributes.indent : 0 } : undefined,
+
+    numbering: (paragraph.attributes?.list === 'ordered') ? { reference: `numbered_${numberedTracker}`, level: (paragraph.attributes.indent ? paragraph.attributes.indent : 0) } : (paragraph.attributes?.list === 'bullet' && customBullets) ? { reference: 'customBullets', level: (paragraph.attributes.indent ? paragraph.attributes.indent : 0) } : undefined ,
+
     alignment: paragraph.attributes?.align === 'left' ? AlignmentType.LEFT : paragraph.attributes?.align === 'center' ? AlignmentType.CENTER : paragraph.attributes?.align === 'right' ? AlignmentType.RIGHT : paragraph.attributes?.align === 'justify' ? AlignmentType.JUSTIFIED : undefined,
+
     style: paragraph.attributes?.['code-block'] ? 'code_block' : paragraph.attributes?.blockquote ? 'block_quote' : (paragraph as ParagraphAlt).attributes?.citation ? 'citation' : undefined,
     // bidirectional: paragraph.attributes?.direction === 'rtl' ? true : undefined,
     // indent

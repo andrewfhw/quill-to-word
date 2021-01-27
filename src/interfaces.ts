@@ -32,7 +32,7 @@ export interface RunProperties {
 
 export interface CustomLevels {
   level: number;
-  format: 'decimal' | 'lowerLetter' | 'lowerRoman' | 'upperRoman' | 'upperLetter';
+  format: 'decimal' | 'lowerLetter' | 'lowerRoman' | 'upperRoman' | 'upperLetter' | 'bullet';
   text: string;
   alignment: AlignmentType;
   style?: {
@@ -59,5 +59,15 @@ export interface StyleConfig {
 export interface Config {
   paragraphStyles?: StyleConfig;
   customLevels?: CustomLevels[];
+  customBulletLevels?: CustomLevels[];
   exportAs?: 'doc' | 'blob' | 'buffer' | 'base64';
 }
+
+export interface NumberedList {
+  reference: string;
+  levels: CustomLevels[];
+}
+
+export interface NumberingConfig {
+  config: NumberedList[];
+};

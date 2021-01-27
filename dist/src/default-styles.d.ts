@@ -1,4 +1,4 @@
-import { AlignmentType } from 'docx';
+import { CustomLevels } from './interfaces';
 export declare const defaultStyles: ({
     id: string;
     name: string;
@@ -150,37 +150,12 @@ export declare const defaultStyles: ({
     };
     next?: undefined;
 })[];
-export declare const customLevels: {
-    level: number;
-    format: string;
-    text: string;
-    alignment: AlignmentType;
-    style: {
-        paragraph: {
-            indent: {
-                left: number;
-                hanging: number;
-            };
-        };
-    };
-}[];
+export declare const customNumberedLevels: CustomLevels[];
+export declare const customBulletLevels: CustomLevels[];
 export declare const defaultNumbering: {
     config: {
         reference: string;
-        levels: {
-            level: number;
-            format: string;
-            text: string;
-            alignment: AlignmentType;
-            style: {
-                paragraph: {
-                    indent: {
-                        left: number;
-                        hanging: number;
-                    };
-                };
-            };
-        }[];
+        levels: CustomLevels[];
     }[];
 };
 //# sourceMappingURL=default-styles.d.ts.map
